@@ -1,0 +1,35 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+- main
+- synapse
+- refs/heads/synapse
+pr:
+- main
+- synapse
+
+variables:
+  solution: 'FhirToDataLake\*.sln'
+  buildConfiguration: 'Release'
+  buildPlatform: 'x64'
+  major: 0
+  minor: 3
+  patch: 0
+  buildnum: $[counter(format('{0}.{1}.{2}',variables['major'],variables['minor'], variables['patch']), 1)]
+  version: $(major).$(minor).$(patch).$(buildnum)
+
+stages:
+- stage: Test
+  - task: PythonScript@0
+  inputs:
+    scriptSource: inline
+    script: |
+      import sys
+      print ('Executing script file is:', str(sys.argv[0]))
+      print ('The arguments are:', str(sys.argv))
+      import argparse
+      parser = argparse.ArgumentParser()
+      parser.add_argument("--world", help="Provide the name of the world to greet.")
+      args = parser.parse_args()
+      print ('Hello ', args.world)
+    arguments: --world Venus
