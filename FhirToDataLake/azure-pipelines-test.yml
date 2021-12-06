@@ -25,5 +25,5 @@ stages:
     steps:
     - task: PythonScript@0
       inputs:
-        script: python E2E\*.py
+        script: E2E\*.py
         arguments: --world Venus
