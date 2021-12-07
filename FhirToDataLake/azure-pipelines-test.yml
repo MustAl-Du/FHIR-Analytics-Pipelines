@@ -25,11 +25,6 @@ stages:
     steps:
     - task: PythonScript@0
       inputs:
-        scriptSource: inline
-        script: |
-          import os
-          path = os.listdir(os.getcwd())
-          for p in path:
-              if os.path.isdir(p):
-                  print(p)
-        arguments: --world '$(Agent.TempDirectory)'
+        scriptSource: filePath
+        scriptPath: '$(Agent.TempDirectory)/E2E/E2E_Validator.py'
+        arguments: --world 'quwan'
