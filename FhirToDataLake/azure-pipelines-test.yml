@@ -27,6 +27,8 @@ stages:
       inputs:
         scriptSource: filePath
         scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
-        arguments: --StorageConnectionString '$(StorageConnectionString)' --SqlUsername '' --SqlPassword ''
+        arguments: --StorageConnectionString '$env:MAPPED_STORAGE_CONNECTION_STRING' --SqlUsername '$env:MAPPED_SQL_USERNAME' --SqlPassword '$env:MAPPED_SQL_PASSWORD'
       env:
-        MY_MAPPED_ENV_VAR: $(StorageConnectionString)
+        MAPPED_STORAGE_CONNECTION_STRING: $(StorageConnectionString)
+        MAPPED_SQL_USERNAME: $(SqlUsername)
+        MAPPED_SQL_PASSWORD: $(SqlPassword)
