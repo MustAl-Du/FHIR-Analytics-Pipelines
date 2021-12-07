@@ -38,6 +38,7 @@ stages:
         arguments: --StorageConnectionString '$(StorageConnectionString)' --SqlUsername $(SQL_USERNAME) --SqlPassword $(SQL_PASSWORD)
       
       env:
+        STORAGE_CONNECTION_STRING: $(StorageConnectionString)
         SQL_USERNAME: $(SqlUsername)
         SQL_PASSWORD: $(SqlPassword)
 
