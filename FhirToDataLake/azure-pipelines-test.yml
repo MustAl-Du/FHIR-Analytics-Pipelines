@@ -22,6 +22,11 @@ stages:
 - stage: Test
   jobs:
   - job: Test
+    variables:
+      STORAGE_CONNECTION_STRING: $(StorageConnectionString)
+      SQL_USERNAME: $(SqlUsername)
+      SQL_PASSWORD: $(SqlPassword)
+
     steps:
     - task: UsePythonVersion@0
       displayName: 'Use Python 3.7'
@@ -35,8 +40,4 @@ stages:
       inputs:
         scriptSource: filePath
         scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
-        arguments: --StorageConnectionString $env:MAPPED_STORAGE_CONNECTION_STRING --SqlUsername $env:MAPPED_SQL_USERNAME --SqlPassword $env:MAPPED_SQL_PASSWORD
-      env:
-        MAPPED_STORAGE_CONNECTION_STRING: $(StorageConnectionString)
-        MAPPED_SQL_USERNAME: $(SqlUsername)
-        MAPPED_SQL_PASSWORD: $(SqlPassword)
+        arguments: --StorageConnectionString '$(STORAGE_CONNECTION_STRING)' --SqlUsername '$(SQL_USERNAME)' --SqlPassword '$(SQL_PASSWORD)'
