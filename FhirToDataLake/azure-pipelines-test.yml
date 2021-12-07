@@ -35,7 +35,7 @@ stages:
       inputs:
         scriptSource: filePath
         scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
-        arguments: --StorageConnectionString '$(StorageConnectionString)' --SqlUsername $SQL_USERNAME --SqlPassword SQL_PASSWORD
+        arguments: --StorageConnectionString '$(StorageConnectionString)' --SqlUsername $(SQL_USERNAME) --SqlPassword $(SQL_PASSWORD)
       
       env:
         SQL_USERNAME: $(SqlUsername)
