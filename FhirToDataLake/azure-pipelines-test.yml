@@ -26,5 +26,5 @@ stages:
     - task: PythonScript@0
       inputs:
         scriptSource: filePath
-        scriptPath: '$(Agent.TempDirectory)/E2E/E2E_Validator.py'
+        scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
         arguments: --world 'quwan'
