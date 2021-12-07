@@ -32,4 +32,4 @@ stages:
           for p in path:
               if os.path.isdir(p):
                   print(p)
-        arguments: --world $(System.DefaultWorkingDirectory)
+        arguments: --world '$(Build.SourcesDirectory)'
