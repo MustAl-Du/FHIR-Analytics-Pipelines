@@ -13,4 +13,6 @@ if __name__ == "__main__":
     print('Executing script file is:', str(sys.argv[0]))
     print('The arguments are:', str(sys.argv))
 
-    print('Hello ', args.world)
+    print('StorageConnectionString: ', args.StorageConnectionString)
+    print('SqlUsername: ', args.SqlUsername)
+    print('SqlPassword: ', args.SqlPassword)
