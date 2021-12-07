@@ -23,6 +23,14 @@ stages:
   jobs:
   - job: Test
     steps:
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: '3.7'
+
+    - script: pip install pyodbc
+      displayName: 'Install pyodbc'
+
     - task: PythonScript@0
       inputs:
         scriptSource: filePath
