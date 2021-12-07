@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 import pyodbc
@@ -10,6 +11,10 @@ args = parser.parse_args()
 
 sqlServerEndpoint = "quwansynapse1207-ondemand.sql.azuresynapse.net"
 database = "fhirdb"
+storageConnectionString = os.getenv('STORAGE_CONNECTION_STRING')
+sqlUsername = os.getenv('SQL_USERNAME')
+sqlPassword = os.getenv('SQL_PASSWORD')
+
 
 if __name__ == "__main__":
     sys.stdout.flush()
@@ -17,12 +22,16 @@ if __name__ == "__main__":
     print('-> Executing script file is:', str(sys.argv[0]))
     print('-> The arguments are:', str(sys.argv))
 
-    print('-> StorageConnectionString: ', args.StorageConnectionString)
-    print('-> SqlUsername: ', args.SqlUsername)
-    print('-> SqlPassword: ', args.SqlPassword)
+    print('-> args.StorageConnectionString: ', args.StorageConnectionString)
+    print('-> args.SqlUsername: ', args.SqlUsername)
+    print('-> args.SqlPassword: ', args.SqlPassword)
+
+    print('-> StorageConnectionString: ', storageConnectionString[0:3])
+    print('-> SqlUsername: ', sqlUsername[0:3])
+    print('-> SqlPassword: ', sqlPassword[0:3])
 
     connector = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+sqlServerEndpoint+';DATABASE='+database+'' + 
-        ';UID='+args.SqlUsername+';PWD='+args.SqlPassword)
+        ';UID='+sqlUsername+';PWD='+sqlPassword)
 
     cursor = connector.cursor()
     cursor.execute("SELECT TOP(10) * FROM [fhir].[Patient]")
