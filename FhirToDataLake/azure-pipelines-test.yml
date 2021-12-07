@@ -27,4 +27,4 @@ stages:
       inputs:
         scriptSource: filePath
         scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
-        arguments: --world 'quwan'
+        arguments: --StorageConnectionString 'quwan' --SqlUsername '' --SqlPassword ''
