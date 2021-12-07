@@ -25,5 +25,6 @@ stages:
     steps:
     - task: PythonScript@0
       inputs:
-        script: E2E\*.py
+        scriptSource: filePath
+        scriptPath: E2E\E2E_Validator.py
         arguments: --world Venus
