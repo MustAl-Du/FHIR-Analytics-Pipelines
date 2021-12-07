@@ -1,7 +1,7 @@
 import sys
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     sys.stdout.flush()
 
     print('Executing script file is:', str(sys.argv[0]))
