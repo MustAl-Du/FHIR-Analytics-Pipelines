@@ -2,10 +2,12 @@ import sys
 
 
 if __name__ == "main":
-    print ('Executing script file is:', str(sys.argv[0]))
-    print ('The arguments are:', str(sys.argv))
+    sys.stdout.flush()
+
+    print('Executing script file is:', str(sys.argv[0]))
+    print('The arguments are:', str(sys.argv))
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--world", help="Provide the name of the world to greet.")
     args = parser.parse_args()
-    print ('Hello ', args.world)
+    print('Hello ', args.world)
