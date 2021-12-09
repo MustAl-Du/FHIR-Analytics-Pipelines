@@ -34,7 +34,7 @@ stages:
               fhirServerUrl = "$(fhirServerUrl)"
           }
 
-          New-AzResourceGroupDeployment -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FHIR-Analytics-Pipelines/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
+          New-AzResourceGroupDeployment -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
 
           
 
