@@ -19,9 +19,9 @@ variables:
   version: $(major).$(minor).$(patch).$(buildnum)
 
 stages:
-- stage: Test
+- stage: Deploy
   jobs:
-  - job: Test
+  - job: DeployWithARMTemplate
     steps:
     - task: AzurePowerShell@4
       inputs: 
@@ -29,9 +29,19 @@ stages:
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
-          Write-Host "ABC"
-          Get-AzContext
+          $templateParameters = @{
+              appName = $(appName)
+              fhirServerUrl = $(fhirServerUrl)
+          }
 
+          New-AzResourceGroupDeployment -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FHIR-Analytics-Pipelines/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
+
+          
+
+- stage: E2ETest
+  jobs:
+  - job: ValidatorTest
+    steps:
     - task: UsePythonVersion@0
       displayName: 'Use Python 3.7'
       inputs:
@@ -50,4 +60,3 @@ stages:
         STORAGE_CONNECTION_STRING: $(StorageConnectionString)
         SQL_USERNAME: $(SqlUsername)
         SQL_PASSWORD: $(SqlPassword)
-      
