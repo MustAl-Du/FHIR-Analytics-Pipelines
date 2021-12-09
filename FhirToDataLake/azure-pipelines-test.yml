@@ -44,7 +44,7 @@ stages:
       
     - task: AzurePowerShell@4
       inputs: 
-        azureSubscription: 'Health Demo'
+        azureSubscription: 'quwanconnection1209'
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
