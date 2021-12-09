@@ -44,7 +44,7 @@ stages:
       
     - task: AzurePowerShell@4
       inputs: 
-        azureSubscription: 'Resolute Open Source'
+        azureSubscription: 'Health Demo'
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
