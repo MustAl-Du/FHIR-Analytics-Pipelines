@@ -44,10 +44,10 @@ stages:
       
     - task: AzurePowerShell@4
       inputs: 
-        azureSubscription: $(ConnectedServiceName)
+        azureSubscription: 'Resolute Open Source'
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
           Write-Host "ABC"
           Get-AzContext
-          
+
