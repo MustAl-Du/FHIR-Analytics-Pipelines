@@ -31,7 +31,7 @@ stages:
         Inline: |
           $templateParameters = @{
               appName = "$(appName)""
-              fhirServerUrl = "$(fhirServerUrl)""
+              fhirServerUrl = "$(fhirServerUrl)"
           }
 
           New-AzResourceGroupDeployment -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FHIR-Analytics-Pipelines/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
