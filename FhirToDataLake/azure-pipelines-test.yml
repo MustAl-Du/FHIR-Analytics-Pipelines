@@ -23,6 +23,15 @@ stages:
   jobs:
   - job: Test
     steps:
+    - task: AzurePowerShell@4
+      inputs: 
+        azureSubscription: 'quwanconnection1209'
+        azurePowerShellVersion: latestVersion
+        ScriptType: inlineScript
+        Inline: |
+          Write-Host "ABC"
+          Get-AzContext
+
     - task: UsePythonVersion@0
       displayName: 'Use Python 3.7'
       inputs:
@@ -42,12 +51,3 @@ stages:
         SQL_USERNAME: $(SqlUsername)
         SQL_PASSWORD: $(SqlPassword)
       
-    - task: AzurePowerShell@4
-      inputs: 
-        azureSubscription: 'quwanconnection1209'
-        azurePowerShellVersion: latestVersion
-        ScriptType: inlineScript
-        Inline: |
-          Write-Host "ABC"
-          Get-AzContext
-
