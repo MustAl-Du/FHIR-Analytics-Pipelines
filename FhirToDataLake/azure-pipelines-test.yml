@@ -30,7 +30,7 @@ stages:
         ScriptType: inlineScript
         Inline: |
           $templateParameters = @{
-              appName = "$(appName)""
+              appName = "$(appName)"
               fhirServerUrl = "$(fhirServerUrl)"
           }
 
