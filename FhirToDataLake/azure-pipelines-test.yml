@@ -41,4 +41,13 @@ stages:
         STORAGE_CONNECTION_STRING: $(StorageConnectionString)
         SQL_USERNAME: $(SqlUsername)
         SQL_PASSWORD: $(SqlPassword)
-
+      
+    - task: AzurePowerShell@4
+      inputs: 
+        azureSubscription: $(ConnectedServiceName)
+        azurePowerShellVersion: latestVersion
+        ScriptType: inlineScript
+        Inline: |
+          Write-Host "ABC"
+          Get-AzContext
+          
