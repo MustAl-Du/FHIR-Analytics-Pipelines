@@ -35,7 +35,7 @@ stages:
        docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
       displayName: start mock-data-source
 
-    - task: AzurePowerShell@4
+    - task: AzurePowerShell@5
       inputs: 
         azureSubscription: 'ResoluteOpenSource'
         azurePowerShellVersion: latestVersion
@@ -47,17 +47,19 @@ stages:
           }
 
           New-AzResourceGroupDeployment -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
+      displayName: Deploy Fhir Synapse sync pipeline
 
     - powershell: 'Start-Sleep -s 480'
       displayName: 'Delay 8 mins to fetch data from FHIR server'
 
-    - task: AzurePowerShell@4
+    - task: AzurePowerShell@5
       inputs: 
         azureSubscription: 'ResoluteOpenSource'
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
           Stop-AzFunctionApp -Name $(appName) -ResourceGroupName $(resourceGroup) -Force
+      displayName: 'Stop function to fetch data from FHIR server'
 
     - task: Docker@2
       displayName: stop mock-data-source
