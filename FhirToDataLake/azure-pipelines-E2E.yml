@@ -31,7 +31,7 @@ stages:
           Get-AzContext
           (Get-AzContext).Account
           (Get-AzContext).Account.Id
-          $objectId = (Get-AzADUser -UserPrincipalName (Get-AzContext).Account).Id
+          $objectId = (Get-AzContext).Account.Id
 
           $subscriptionId = (Get-AzContext).Subscription.Id
 
