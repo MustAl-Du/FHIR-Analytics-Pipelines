@@ -16,24 +16,48 @@ variables:
   version: $(major).$(minor).$(patch).$(buildnum)
 
 stages:
-- stage: Deploy
+- stage: E2E
   pool:
     vmImage: windows-latest
   jobs:
-  - job: Build
+  - job: SetupSynapse
+    steps:
+    - task: AzurePowerShell@5
+      inputs: 
+        azureSubscription: 'ResoluteOpenSource'
+        azurePowerShellVersion: latestVersion
+        ScriptType: inlineScript
+        Inline: |
+          $objectId = (Get-AzADUser -UserPrincipalName (Get-AzContext).Account).Id
+
+          $subscriptionId = (Get-AzContext).Subscription.Id
+
+          New-AzRoleAssignment -ObjectID $objectId `
+              -RoleDefinitionName "Storage Blob Data Contributor" `
+              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+
+          $synapseId = (Get-AzSynapseWorkspace -Name $(synapseWorkspaceName) -ErrorAction Stop).identity.principalid
+
+          New-AzRoleAssignment -ObjectID $synapseId `
+              -RoleDefinitionName "Storage Blob Data Contributor" `
+              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+
+      displayName: Assign Azure roles for service connection and Synapse to the Storage
+
+  - job: Deploy
     steps:
     - task: NuGetAuthenticate@0
-      displayName: 'NuGet Authenticate'
+      displayName: NuGet Authenticate
 
     - task: NuGetToolInstaller@1
-      displayName: 'Use NuGet 5.11'
+      displayName: Use NuGet 5.11
       inputs:
         versionSpec: 5.11
 
     - script: |
        docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
        docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-      displayName: start mock-data-source
+      displayName: Start mock-data-source
 
     - task: AzurePowerShell@5
       inputs: 
@@ -50,7 +74,7 @@ stages:
       displayName: Deploy Fhir Synapse sync pipeline
 
     - powershell: 'Start-Sleep -s 480'
-      displayName: 'Delay 8 mins to fetch data from FHIR server'
+      displayName: Delay 8 mins to fetch data from FHIR server
 
     - task: AzurePowerShell@5
       inputs: 
@@ -59,7 +83,7 @@ stages:
         ScriptType: inlineScript
         Inline: |
           Stop-AzFunctionApp -Name $(appName) -ResourceGroupName $(resourceGroup) -Force
-      displayName: 'Stop function to fetch data from FHIR server'
+      displayName: Stop function to fetch data from FHIR server
 
     - task: Docker@2
       displayName: stop mock-data-source
