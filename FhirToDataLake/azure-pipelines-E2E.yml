@@ -57,7 +57,7 @@ stages:
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
-          Stop-AzFunctionApp -Name "$(appName)" -ResourceGroupName "{}" -Force
+          Stop-AzFunctionApp -Name $(appName) -ResourceGroupName $(resourceGroup) -Force
 
     - task: Docker@2
       displayName: stop mock-data-source
@@ -79,13 +79,25 @@ stages:
     - script: pip install pyodbc
       displayName: 'Install pyodbc'
 
+    - script: |
+       docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
+       docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
+      displayName: start mock-data-source
+
     - task: PythonScript@0
       inputs:
         scriptSource: filePath
         scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
-        arguments: --StorageConnectionString '$(StorageConnectionString)' --SqlUsername $(SQL_USERNAME) --SqlPassword $(SQL_PASSWORD)
+        arguments: --SynapseWorkspaceName 'qwe' --FhirServerUrl $(fhirServerUrl) --Database "fhirdb" --SchemaCollectionDirectory  $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/
         
       env:
         STORAGE_CONNECTION_STRING: $(StorageConnectionString)
         SQL_USERNAME: $(SqlUsername)
         SQL_PASSWORD: $(SqlPassword)
+    
+    - task: Docker@2
+      displayName: stop mock-data-source
+      condition: succeededOrFailed()
+      inputs:
+        command: stop
+        container: mock-data-source
