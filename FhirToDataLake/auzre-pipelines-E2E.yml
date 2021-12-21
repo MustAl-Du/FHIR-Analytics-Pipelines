@@ -1,0 +1,91 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+- main
+- synapse
+- refs/heads/synapse
+pr:
+- main
+- synapse
+
+variables:
+  major: 0
+  minor: 3
+  patch: 0
+  buildnum: $[counter(format('{0}.{1}.{2}',variables['major'],variables['minor'], variables['patch']), 1)]
+  version: $(major).$(minor).$(patch).$(buildnum)
+
+stages:
+- stage: Deploy
+  pool:
+    vmImage: windows-latest
+  jobs:
+  - job: Build
+    steps:
+    - task: NuGetAuthenticate@0
+      displayName: 'NuGet Authenticate'
+
+    - task: NuGetToolInstaller@1
+      displayName: 'Use NuGet 5.11'
+      inputs:
+        versionSpec: 5.11
+
+    - script: |
+       docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
+       docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
+      displayName: start mock-data-source
+
+    - task: AzurePowerShell@4
+      inputs: 
+        azureSubscription: 'ResoluteOpenSource'
+        azurePowerShellVersion: latestVersion
+        ScriptType: inlineScript
+        Inline: |
+          $templateParameters = @{
+              appName = "$(appName)"
+              fhirServerUrl = "$(fhirServerUrl)"
+          }
+
+          New-AzResourceGroupDeployment -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
+
+    - powershell: 'Start-Sleep -s 480'
+      displayName: 'Delay 8 mins to fetch data from FHIR server'
+
+    - task: AzurePowerShell@4
+      inputs: 
+        azureSubscription: 'ResoluteOpenSource'
+        azurePowerShellVersion: latestVersion
+        ScriptType: inlineScript
+        Inline: |
+          Stop-AzFunctionApp -Name "$(appName)" -ResourceGroupName "{}" -Force
+
+    - task: Docker@2
+      displayName: stop mock-data-source
+      condition: succeededOrFailed()
+      inputs:
+        command: stop
+        container: mock-data-source
+
+
+- stage: E2ETest
+  jobs:
+  - job: ValidatorTest
+    steps:
+    - task: UsePythonVersion@0
+      displayName: 'Use Python 3.7'
+      inputs:
+        versionSpec: '3.7'
+
+    - script: pip install pyodbc
+      displayName: 'Install pyodbc'
+
+    - task: PythonScript@0
+      inputs:
+        scriptSource: filePath
+        scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
+        arguments: --StorageConnectionString '$(StorageConnectionString)' --SqlUsername $(SQL_USERNAME) --SqlPassword $(SQL_PASSWORD)
+        
+      env:
+        STORAGE_CONNECTION_STRING: $(StorageConnectionString)
+        SQL_USERNAME: $(SqlUsername)
+        SQL_PASSWORD: $(SqlPassword)
