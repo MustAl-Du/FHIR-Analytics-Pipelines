@@ -20,7 +20,7 @@ stages:
   pool:
     vmImage: windows-latest
   jobs:
-  - job: SetupSynapse
+  - job: E2ETest
     steps:
     - task: AzurePowerShell@5
       inputs: 
@@ -47,8 +47,6 @@ stages:
 
       displayName: Assign Azure roles for service connection and Synapse to the Storage
 
-  - job: Deploy
-    steps:
     - task: NuGetAuthenticate@0
       displayName: NuGet Authenticate
 
