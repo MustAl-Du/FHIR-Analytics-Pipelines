@@ -28,8 +28,6 @@ stages:
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
-          Install-Module -Name Az.Synapse
-
           $applicationId = (Get-AzContext).Account.Id
           $objectId = (Get-AzADServicePrincipal -ApplicationId $applicationId).Id
           
