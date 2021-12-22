@@ -41,9 +41,12 @@ stages:
           $synapseId
 
           try {
-              New-AzRoleAssignment -ObjectID $synapseId `
-                -RoleDefinitionName "Storage Blob Data Contributor" `
-                -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+            Write-Host $synapseId
+            Write-Host "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+
+            New-AzRoleAssignment -ObjectID $synapseId `
+              -RoleDefinitionName "Storage Blob Data Contributor" `
+              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
           }
           catch {
             Write-Host "Assign Storage Blob Data Contributor role to Synapse failed"
