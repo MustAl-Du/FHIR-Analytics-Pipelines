@@ -45,7 +45,7 @@ stages:
             Write-Host "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
 
             New-AzRoleAssignment -ObjectID $synapseId `
-              -ObjectType "ServicePrincipal" `
+              -ObjectType ServicePrincipal `
               -RoleDefinitionName "Storage Blob Data Contributor" `
               -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
           }
