@@ -39,7 +39,7 @@ stages:
 
           New-AzRoleAssignment -ObjectID $synapseId `
               -RoleDefinitionName "Storage Blob Data Contributor" `
-              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
 
           New-AzRoleAssignment -ObjectID $objectId `
               -RoleDefinitionName "Storage Blob Data Contributor" `
