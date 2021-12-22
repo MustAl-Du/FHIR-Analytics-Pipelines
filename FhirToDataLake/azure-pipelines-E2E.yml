@@ -28,14 +28,12 @@ stages:
         azurePowerShellVersion: latestVersion
         ScriptType: inlineScript
         Inline: |
+          Install-Module -Name Az.Synapse
+
           $applicationId = (Get-AzContext).Account.Id
           $objectId = (Get-AzADServicePrincipal -ApplicationId $applicationId).Id
           
           $subscriptionId = (Get-AzContext).Subscription.Id
-
-          New-AzRoleAssignment -ObjectID $objectId `
-              -RoleDefinitionName "Storage Blob Data Contributor" `
-              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
 
           $synapseId = (Get-AzSynapseWorkspace -Name $(synapseWorkspaceName) -ErrorAction Stop).identity.principalid
 
@@ -43,6 +41,9 @@ stages:
               -RoleDefinitionName "Storage Blob Data Contributor" `
               -Scope  "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.Storage/storageAccounts/$(storageName)"
 
+          New-AzRoleAssignment -ObjectID $objectId `
+              -RoleDefinitionName "Storage Blob Data Contributor" `
+              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
       displayName: Assign Azure roles for service connection and Synapse to the Storage
 
     - task: NuGetAuthenticate@0
