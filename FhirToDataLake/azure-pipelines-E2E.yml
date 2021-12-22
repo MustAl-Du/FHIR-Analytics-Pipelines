@@ -22,51 +22,6 @@ stages:
   jobs:
   - job: E2ETest
     steps:
-    - task: AzurePowerShell@5
-      inputs: 
-        azureSubscription: 'ResoluteOpenSource'
-        azurePowerShellVersion: latestVersion
-        ScriptType: inlineScript
-        Inline: |
-          Install-Module -Name Az.Synapse -Scope CurrentUser -Force
-
-          $applicationId = (Get-AzContext).Account.Id
-          $objectId = (Get-AzADServicePrincipal -ApplicationId $applicationId).Id
-
-          $subscriptionId = (Get-AzContext).Subscription.Id
-
-          $synapseId = (Get-AzSynapseWorkspace -Name $(synapseWorkspaceName) -ErrorAction Stop).identity.principalid
-          
-          $objectId
-          $synapseId
-
-          try {
-            Write-Host $synapseId
-            Write-Host "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
-
-            New-AzRoleAssignment -ObjectID $synapseId `
-              -RoleDefinitionName "Storage Blob Data Contributor" `
-              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
-          }
-          catch {
-            Write-Host "Assign Storage Blob Data Contributor role to Synapse failed"
-            Write-Host ($_ | ConvertTo-Json)
-            throw 
-          }
-
-          try {
-            New-AzRoleAssignment -ObjectID $objectId `
-              -RoleDefinitionName "Storage Blob Data Contributor" `
-              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
-          }
-          catch {
-            Write-Host "Assign Storage Blob Data Contributor role to service connection principal account failed"
-            Write-Host ($_ | ConvertTo-Json)
-            throw 
-          }
-
-      displayName: Assign Azure roles for service connection and Synapse to the Storage
-
     - task: NuGetAuthenticate@0
       displayName: NuGet Authenticate
 
@@ -112,6 +67,51 @@ stages:
       inputs:
         command: stop
         container: mock-data-source
+    
+    - task: AzurePowerShell@5
+      inputs: 
+        azureSubscription: 'ResoluteOpenSource'
+        azurePowerShellVersion: latestVersion
+        ScriptType: inlineScript
+        Inline: |
+          Install-Module -Name Az.Synapse -Scope CurrentUser -Force
+
+          $applicationId = (Get-AzContext).Account.Id
+          $objectId = (Get-AzADServicePrincipal -ApplicationId $applicationId).Id
+
+          $subscriptionId = (Get-AzContext).Subscription.Id
+
+          $synapseId = (Get-AzSynapseWorkspace -Name $(synapseWorkspaceName) -ErrorAction Stop).identity.principalid
+          
+          $objectId
+          $synapseId
+
+          try {
+            Write-Host $synapseId
+            Write-Host "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+
+            New-AzRoleAssignment -ApplicationId $synapseId `
+              -RoleDefinitionName "Storage Blob Data Contributor" `
+              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+          }
+          catch {
+            Write-Host "Assign Storage Blob Data Contributor role to Synapse failed"
+            Write-Host ($_ | ConvertTo-Json)
+            throw 
+          }
+
+          try {
+            New-AzRoleAssignment -ObjectID $objectId `
+              -RoleDefinitionName "Storage Blob Data Contributor" `
+              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+          }
+          catch {
+            Write-Host "Assign Storage Blob Data Contributor role to service connection principal account failed"
+            Write-Host ($_ | ConvertTo-Json)
+            throw 
+          }
+
+      displayName: Assign Azure roles for service connection and Synapse to the Storage
 
 
 - stage: E2ETest
