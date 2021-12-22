@@ -22,40 +22,22 @@ stages:
   jobs:
   - job: E2ETest
     steps:
-    - task: AzurePowerShell@5
+    - task: AzureCLI@2
       inputs: 
         azureSubscription: 'ResoluteOpenSource'
-        azurePowerShellVersion: latestVersion
-        ScriptType: inlineScript
-        Inline: |
-          Install-Module -Name Az.Synapse -Scope CurrentUser -Force
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          $subscriptionId = az account show --query 'id' -o tsv
 
-          $applicationId = (Get-AzContext).Account.Id
-          $objectId = (Get-AzADServicePrincipal -ApplicationId $applicationId).Id
+          $synapsePrincipalId = az synapse workspace show --name $(synapseWorkspaceName) --resource-group $(resourceGroup) --query 'identity.principalId' -o tsv
+          $serviceConnectionPrincipalId = az account show --query 'user.name' -o tsv
 
-          $subscriptionId = (Get-AzContext).Subscription.Id
+          $storageScope = '/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)'
 
-          $synapseId = (Get-AzSynapseWorkspace -Name $(synapseWorkspaceName) -ErrorAction Stop).identity.principalid
-          
-          $objectId
-          $synapseId
+          az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $synapsePrincipalId --scope $storageScope --assignee-principal-type ServicePrincipal
+          az role assignment create --role "Storage Blob Data Contributor" --assignee $serviceConnectionPrincipalId --scope $storageScope
 
-          New-AzRoleAssignment -ObjectID $synapseId `
-            -ObjectType ServicePrincipal `
-            -RoleDefinitionName "Storage Blob Data Contributor" `
-            -Scope "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)" `
-            -ErrorAction Stop
-
-          try {
-            New-AzRoleAssignment -ObjectID $objectId `
-              -RoleDefinitionName "Storage Blob Data Contributor" `
-              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
-          }
-          catch {
-            Write-Host "Assign Storage Blob Data Contributor role to service connection principal account failed"
-            Write-Host ($_ | ConvertTo-Json)
-            throw 
-          }
 
       displayName: Assign Azure roles for service connection and Synapse to the Storage
 
