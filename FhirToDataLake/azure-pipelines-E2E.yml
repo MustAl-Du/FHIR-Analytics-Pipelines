@@ -40,20 +40,11 @@ stages:
           $objectId
           $synapseId
 
-          try {
-            Write-Host $synapseId
-            Write-Host "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
-
-            New-AzRoleAssignment -ObjectID $synapseId `
-              -ObjectType ServicePrincipal `
-              -RoleDefinitionName "Storage Blob Data Contributor" `
-              -Scope  "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
-          }
-          catch {
-            Write-Host "Assign Storage Blob Data Contributor role to Synapse failed"
-            Write-Host ($_ | ConvertTo-Json)
-            throw 
-          }
+          New-AzRoleAssignment -ObjectID $synapseId `
+            -ObjectType ServicePrincipal `
+            -RoleDefinitionName "Storage Blob Data Contributor" `
+            -Scope "/subscriptions/$subscriptionId/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)" `
+            -ErrorAction Stop
 
           try {
             New-AzRoleAssignment -ObjectID $objectId `
