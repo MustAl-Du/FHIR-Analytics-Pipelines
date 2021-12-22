@@ -32,7 +32,7 @@ stages:
           (Get-AzContext).Account
           (Get-AzContext).Account.Id
           $applicationId = (Get-AzContext).Account.Id
-          $objectId = Get-AzADServicePrincipal -ApplicationId $applicationId
+          $objectId = (Get-AzADServicePrincipal -ApplicationId $applicationId).Id
 
           $objectId
           
