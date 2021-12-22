@@ -33,7 +33,7 @@ stages:
           $synapsePrincipalId = az synapse workspace show --name $(synapseWorkspaceName) --resource-group $(resourceGroup) --query 'identity.principalId' -o tsv
           $serviceConnectionPrincipalId = az account show --query 'user.name' -o tsv
 
-          $storageScope = "/subscriptions/$($subscriptionId)/resourceGroups/$($(resourceGroup))/providers/Microsoft.Storage/storageAccounts/$($(storageName))"
+          $storageScope = "/subscriptions/$($subscriptionId)/resourceGroups/" + $(resourceGroup) + "/providers/Microsoft.Storage/storageAccounts/" + $(storageName)
 
           az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $synapsePrincipalId --scope $storageScope --assignee-principal-type ServicePrincipal
           az role assignment create --role "Storage Blob Data Contributor" --assignee $serviceConnectionPrincipalId --scope $storageScope
