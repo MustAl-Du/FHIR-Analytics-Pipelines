@@ -95,8 +95,8 @@ stages:
           New-AzResourceGroupDeployment -ResourceGroupName $(resourceGroup) -TemplateFile $(System.DefaultWorkingDirectory)/FhirToDataLake/deploy/templates/FhirSynapsePipelineTemplate.json -TemplateParameterObject $templateParameters -Verbose
       displayName: Deploy Fhir Synapse sync pipeline
 
-    - powershell: 'Start-Sleep -s 480'
-      displayName: Delay 8 mins to fetch data from FHIR server
+    - powershell: 'Start-Sleep -s 400'
+      displayName: Delay 6 mins to fetch data from FHIR server
 
     - task: AzurePowerShell@5
       inputs: 
