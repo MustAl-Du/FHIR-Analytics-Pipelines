@@ -22,25 +22,6 @@ stages:
   jobs:
   - job: E2ETest
     steps:
-    - task: AzureCLI@2
-      inputs: 
-        azureSubscription: 'ResoluteOpenSource'
-        scriptType: 'ps'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          $subscriptionId = az account show --query 'id' -o tsv
-
-          $synapsePrincipalId = az synapse workspace show --name $(synapseWorkspaceName) --resource-group $(resourceGroup) --query 'identity.principalId' -o tsv
-          $serviceConnectionPrincipalId = az account show --query 'user.name' -o tsv
-
-          $storageScope = "/subscriptions/$($subscriptionId)/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
-
-          az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $synapsePrincipalId --scope $storageScope --assignee-principal-type ServicePrincipal
-          az role assignment create --role "Storage Blob Data Contributor" --assignee $serviceConnectionPrincipalId --scope $storageScope
-
-
-      displayName: Assign Azure roles for service connection and Synapse to the Storage
-
     - task: NuGetAuthenticate@0
       displayName: NuGet Authenticate
 
@@ -78,8 +59,8 @@ stages:
         ScriptType: inlineScript
         Inline: |
           Stop-AzFunctionApp -Name $(appName) -ResourceGroupName $(resourceGroup) -Force
-      displayName: Stop function to fetch data from FHIR server
-
+      displayName: Stop function fetching data from FHIR server
+    
     - task: Docker@2
       displayName: stop mock-data-source
       condition: succeededOrFailed()
@@ -87,23 +68,32 @@ stages:
         command: stop
         container: mock-data-source
 
+    - task: AzureCLI@2
+      inputs: 
+        azureSubscription: 'ResoluteOpenSource'
+        scriptType: 'ps'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          $subscriptionId = az account show --query 'id' -o tsv
 
-- stage: E2ETest
-  jobs:
-  - job: ValidatorTest
-    steps:
-    - task: UsePythonVersion@0
-      displayName: 'Use Python 3.7'
+          $synapsePrincipalId = az synapse workspace show --name $(synapseWorkspaceName) --resource-group $(resourceGroup) --query 'identity.principalId' -o tsv
+          $serviceConnectionPrincipalId = az account show --query 'user.name' -o tsv
+
+          $storageScope = "/subscriptions/$($subscriptionId)/resourceGroups/$(resourceGroup)/providers/Microsoft.Storage/storageAccounts/$(storageName)"
+
+          az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $synapsePrincipalId --scope $storageScope --assignee-principal-type ServicePrincipal
+          az role assignment create --role "Storage Blob Data Contributor" --assignee $serviceConnectionPrincipalId --scope $storageScope
+          # Wait 1 min in case the assignments don't enable.
+          Start-Sleep -s 60
+      displayName: Assign Azure roles for service connection and Synapse to the Storage
+
+    - task: AzureCLI@2
       inputs:
-        versionSpec: '3.7'
-
-    - script: pip install pyodbc
-      displayName: 'Install pyodbc'
-
-    - script: |
-       docker pull healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-       docker run --rm -d -p 5000:5000 --name mock-data-source healthplatformregistry.azurecr.io/fhir-analytics-data-source:v0.0.1
-      displayName: start mock-data-source
+        azureSubscription: 'ResoluteOpenSource'
+        scriptType: 'ps'
+        scriptLocation: 'scriptPath'
+        arguments: ' -SynapseWorkspaceName $(synapseWorkspaceName) -StorageName $(storageName)'
+        scriptPath: '$(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/Set-SynapseEnvironment.ps1'
 
     - task: PythonScript@0
       inputs:
@@ -116,9 +106,3 @@ stages:
         SQL_USERNAME: $(SqlUsername)
         SQL_PASSWORD: $(SqlPassword)
     
-    - task: Docker@2
-      displayName: stop mock-data-source
-      condition: succeededOrFailed()
-      inputs:
-        command: stop
-        container: mock-data-source
