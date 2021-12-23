@@ -22,6 +22,27 @@ stages:
   jobs:
   - job: E2ETest
     steps:
+    - task: AzurePowerShell@5
+      inputs: 
+        azureSubscription: 'ResoluteOpenSource'
+        azurePowerShellVersion: latestVersion
+        ScriptType: inlineScript
+        Inline: |
+          Install-Module -Name Az.Synapse -Force -Scope CurrentUser
+          .$(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/Set-SynapseEnvironment.ps1  -SynapseWorkspaceName $(synapseWorkspaceName) -StorageName $(storageName)
+      displayName: Set up EXTERNAL TABLEs and VIEWs on Synapse.
+
+    - task: PythonScript@0
+      inputs:
+        scriptSource: filePath
+        scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
+        arguments: --SynapseWorkspaceName 'qwe' --FhirServerUrl $(fhirServerUrl) --Database "fhirdb" --SchemaCollectionDirectory  $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/
+        
+      env:
+        STORAGE_CONNECTION_STRING: $(StorageConnectionString)
+        SQL_USERNAME: $(SqlUsername)
+        SQL_PASSWORD: $(SqlPassword)
+
     - task: NuGetAuthenticate@0
       displayName: NuGet Authenticate
 
@@ -86,23 +107,3 @@ stages:
           # Wait 1 min in case the assignments don't enable.
           Start-Sleep -s 60
       displayName: Assign Azure roles for service connection and Synapse to the Storage
-
-    - task: AzureCLI@2
-      inputs:
-        azureSubscription: 'ResoluteOpenSource'
-        scriptType: 'ps'
-        scriptLocation: 'scriptPath'
-        arguments: ' -SynapseWorkspaceName $(synapseWorkspaceName) -StorageName $(storageName)'
-        scriptPath: '$(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/Set-SynapseEnvironment.ps1'
-
-    - task: PythonScript@0
-      inputs:
-        scriptSource: filePath
-        scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
-        arguments: --SynapseWorkspaceName 'qwe' --FhirServerUrl $(fhirServerUrl) --Database "fhirdb" --SchemaCollectionDirectory  $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/
-        
-      env:
-        STORAGE_CONNECTION_STRING: $(StorageConnectionString)
-        SQL_USERNAME: $(SqlUsername)
-        SQL_PASSWORD: $(SqlPassword)
-    
