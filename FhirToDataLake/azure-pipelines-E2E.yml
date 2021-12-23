@@ -29,7 +29,7 @@ stages:
         ScriptType: inlineScript
         Inline: |
           Install-Module -Name Az.Synapse -Force -Scope CurrentUser
-          .$(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/Set-SynapseEnvironment.ps1  -SynapseWorkspaceName $(synapseWorkspaceName) -StorageName $(storageName)
+          . "$(System.DefaultWorkingDirectory)/FhirToDataLake/scripts/Set-SynapseEnvironment.ps1"  -SynapseWorkspaceName $(synapseWorkspaceName) -StorageName $(storageName)
       displayName: Set up EXTERNAL TABLEs and VIEWs on Synapse.
 
     - task: PythonScript@0
@@ -37,11 +37,11 @@ stages:
         scriptSource: filePath
         scriptPath: '$(Build.SourcesDirectory)/E2E/E2E_Validator.py'
         arguments: --SynapseWorkspaceName 'qwe' --FhirServerUrl $(fhirServerUrl) --Database "fhirdb" --SchemaCollectionDirectory  $(System.DefaultWorkingDirectory)/FhirToDataLake/data/schemas/
-        
       env:
         STORAGE_CONNECTION_STRING: $(StorageConnectionString)
         SQL_USERNAME: $(SqlUsername)
         SQL_PASSWORD: $(SqlPassword)
+      displayName: Validate results
 
     - task: NuGetAuthenticate@0
       displayName: NuGet Authenticate
